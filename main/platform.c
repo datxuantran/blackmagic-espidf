@@ -450,7 +450,11 @@ void wifi_init_softap()
     uint64_t chipid;
     esp_read_mac((uint8_t*)&chipid, ESP_MAC_WIFI_SOFTAP);
     
-    if(strcmp(CONFIG_ESP_WIFI_SSID, "auto") == 0 || CONFIG_ESP_WIFI_IS_STATION) {
+    if(strcmp(CONFIG_ESP_WIFI_SSID, "auto") == 0
+    #ifdef CONFIG_ESP_WIFI_IS_STATION
+			|| CONFIG_ESP_WIFI_IS_STATION
+	#endif
+	){
         wifi_config.ap.ssid_len = sprintf((char*)wifi_config.ap.ssid, "blackmagic_%X", (uint32_t)chipid);
     } else {
         wifi_config.ap.ssid_len = sprintf((char*)wifi_config.ap.ssid, CONFIG_ESP_WIFI_SSID);
