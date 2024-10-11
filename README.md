@@ -66,17 +66,80 @@ Connecting to serial terminal can be done using socat:
 socat tcp:192.168.4.1:23,crlf -,echo=0,raw,crlf
 ```
 
-## Building
+## Building and Using the blackmagic-espidf
 
-Grab the toolchain from https://github.com/espressif/ESP8266_RTOS_SDK#developing-with-the-esp8266_rtos_sdk  and add it to $PATH.
+### Building the Project
 
-```bash
-git clone --recursive https://github.com/walmis/blackmagic-espidf.git
-cd blackmagic-espidf
-make menuconfig # optional, if you want to change some settings
-make
-make flash # this will flash using esptool.py over serial connection
-```
+#### Prerequisites
+
+Before you start, ensure you have the toolchain set up. You can download it from the [ESP8266 RTOS SDK repository](https://github.com/espressif/ESP8266_RTOS_SDK#developing-with-the-esp8266_rtos_sdk) and add it to your `$PATH`.
+
+
+1. Clone the blackmagic-espidf repository:
+   ```bash
+   git clone --recursive https://github.com/walmis/blackmagic-espidf.git
+   cd blackmagic-espidf
+   ```
+
+2. (Optional) Configure the settings using:
+   ```bash
+   make menuconfig
+   ```
+
+3. Compile the project:
+   ```bash
+   make
+   ```
+
+4. Flash the firmware using `esptool.py` over a serial connection:
+   ```bash
+   make flash
+   ```
+
+### Using Docker
+
+A pre-built Docker image is available as `datxuantran/blackmagic-espidf`, which significantly reduces the time spent installing all the necessary dependencies for this project.
+
+#### Steps to Run the Docker Image
+
+1. **Identify the Serial Port:**
+   - Connect the ESP8266 to your Linux computer.
+   - Run the following command to find the connected serial port:
+     ```bash
+     sudo dmesg | grep tty
+     ```
+   - Example output may look like `/dev/ttyUSB0`, indicating that the ESP8266 is connected to this serial port.
+
+2. **Grant Your User Access to the Serial Port:**
+   - Add your user to the `dialout` group to allow access:
+     ```bash
+     sudo usermod -aG dialout $USER
+     ```
+   - To apply the changes, run:
+     ```bash
+     newgrp dialout
+     ```
+
+3. **Run the Docker Image:**
+   - Execute the following command to start the Docker container, replacing `/dev/ttyUSB0` with your actual serial port:
+     ```bash
+     docker run -it --rm --device=/dev/ttyUSB0 datxuantran/blackmagic-espidf:latest
+     ```
+
+4. **Inside the Docker Container:**
+   - You can now run the following commands:
+     - For configuration:
+       ```bash
+       make menuconfig
+       ```
+     - To compile and flash the firmware:
+       ```bash
+       make flash
+       ```
+     - To compile, flash, and monitor the firmware:
+       ```bash
+       make flash monitor
+       ```
 
 ### Station Mode Configuration
 
