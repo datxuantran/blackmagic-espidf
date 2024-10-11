@@ -1,42 +1,28 @@
-# Use the official Debian stable slim image as the base image
+# Use the latest Debian slim image as the base
 FROM debian:stable-slim
+
+# Set environment variables
+ENV IDF_PATH=/esp/blackmagic-espidf/ESP8266_RTOS_SDK
 
 # Set the working directory
 WORKDIR /esp
 
-# Install required packages
+# Update and install required packages
 RUN apt update && \
-    apt install -y \
-    git \
-    wget \
-    python3 \
-    python3-venv \
-    build-essential \
-    libncurses5-dev \
-    flex \
-    bison \
-    gperf \
-    zlib1g-dev && \
-    # Clean up unnecessary files
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt install -y git wget python3 python3-virtualenv build-essential libncurses5-dev flex bison gperf zlib1g-dev && \
+	ln -s /usr/bin/python3 /usr/bin/python
 
-# Pull the blackmagic-espidf project
+# Clone the blackmagic-espidf repository
 RUN git clone --recursive https://github.com/datxuantran/blackmagic-espidf.git
 
-# Download and install the ESP8266_RTOS_SDK toolchain
-RUN wget https://dl.espressif.com/dl/xtensa-lx106-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz && \
-    tar -xzf xtensa-lx106-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz -C /opt && \
-    mv /opt/xtensa-lx106-elf /opt/xtensa-lx106-elf-gcc && \
-    echo 'export PATH=/opt/xtensa-lx106-elf-gcc/bin:$PATH' >> /etc/bash.bashrc
+# Install ESP8266_RTOS_SDK requirements 
+RUN /esp/blackmagic-espidf/ESP8266_RTOS_SDK/install.sh \
+	&& echo 'source /esp/blackmagic-espidf/ESP8266_RTOS_SDK/export.sh' >> ~/.bashrc \
+	&& cd blackmagic-espidf
 
-# Create a symbolic link for Python
-RUN ln -s /usr/bin/python3 /usr/bin/python
+# Set the working directory to the blackmagic-espidf folder
+WORKDIR /esp/blackmagic-espidf
 
-# Create and activate a Python virtual environment
-RUN python3 -m venv venv && \
-    . venv/bin/activate && \
-    pip install virtualenv
+# Set the entrypoint to bash
+ENTRYPOINT ["/bin/bash"]
 
-# Set the default command to bash
-CMD ["/bin/bash"]
